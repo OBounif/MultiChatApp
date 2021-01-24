@@ -57,7 +57,7 @@ Client* __AddClient(char* userName,char* password,char* lastIp,char*rank)
 		return NULL;
 	}
 
-	client->id=__GetClientId(client->userName,connection);
+	client->id=mysql_insert_id(connection); // Get last inserted id row
 		
 	return client;
 }
