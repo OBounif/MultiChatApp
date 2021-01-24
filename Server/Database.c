@@ -4,12 +4,9 @@
 #include <mysql.h>
 #include "Database.h"
 #include "Utility.h"
+#include "config_parser.h"
+#include <string.h>
 
-
-#define DB_NAME "ChatRoom" //DATABASE NAME
-#define DB_PASSWORD "A!a123456789" // DATABASE PASSWORD
-#define DB_USER "root" // DATABASE USERNAME
-#define DB_HOST "localhost" //DATABASE HOST
 
 MYSQL* connection=NULL;
 bool mysqlServerStatus=false;
@@ -33,14 +30,18 @@ bool initDatabaseConnection(void)
 	print_log("Connection has been initiated succesful\nEstablishing connection to Database ...");
 	mysqlServerStatus=true;
 	
-	if(mysql_real_connect(connection,DB_HOST,DB_USER,DB_PASSWORD,DB_NAME,0,NULL,0)==NULL)
+	__ParseCfgFile("config");
+	
+	if(mysql_real_connect(connection,(const char*)__Get("DB_HOST"),(const char*)__Get("DB_USER"),(const char*)__Get("DB_PASSWORD"),(const char*)__Get("DB_NAME"),0,NULL,0)==NULL)
 	{
 		print_logerr("Failed to establish connection to Database");
 		print_logerr(mysql_error(connection));
 		freeDatabaseConnection();		
 		
 		mysqlServerStatus=false;
-	}	
+	}
+	else
+		print_log("Connection established successfullt to the database");
 
 	return mysqlServerStatus;
 }
@@ -59,7 +60,3 @@ bool getServerStatus(void)
 }
 
 
-void main()
-{
-	initDatabaseConnection();
-}

@@ -93,7 +93,6 @@ static void __AddEntry(char const* key,void* data,size_t data_length)
 	else
 		strcpy(new->key,key);
 	
-	
 	if(!parsed_data)
 		new->next=NULL;
 	else
@@ -124,19 +123,7 @@ static void __ParseLine(char const* line)
 	char* r_side=NULL;
 
 	for(i=0;i<length && i<BUFFER_LENGTH ;i++)
-	{
-		if(isblank(*(line+i)))
-			continue;
-		
-		char *tmp=realloc(l_side,(++ch)*sizeof(char));
-		
-		if(!tmp)
-		{
-			free(l_side);
-			bail("[CONFIG_PARSER] Not enough Memory");
-		}
-		l_side=tmp;	
-		
+	{	
 		if( *(line+i) == '=' || (i==length-1) || (i==BUFFER_LENGTH-1))
 		{
 			/*
@@ -153,33 +140,31 @@ static void __ParseLine(char const* line)
 			
 			goto LEFT_SIDE;	
 		}
+		else if(isspace(*(line+i)))
+			continue;
 		else
-			*(l_side+ch-1)=*(line + i);
-	}
-
-	LEFT_SIDE:
-		++i; // Avoid "="
-
-		for(ch=0;i<length && i<BUFFER_LENGTH;i++)
 		{
-			if(isblank(*(line+i)))
-				continue;
+			char *tmp=realloc(l_side,(++ch)*sizeof(char));
 			
-			char *tmp=realloc(r_side,(++ch)*sizeof(char));
 			if(!tmp)
 			{
-				free(r_side);
+				free(l_side);
 				bail("[CONFIG_PARSER] Not enough Memory");
 			}
-			r_side=tmp;
-			*(r_side+ch-1)=*(line + i);
-		
+			l_side=tmp;	
+			*(l_side+ch-1)=*(line + i);
+
+		}
+	}
+	LEFT_SIDE:
+		++i; // Avoid "="
+		for(ch=0;i<length && i<BUFFER_LENGTH;i++)
+		{
 			if( (i==length-1) || (i==BUFFER_LENGTH-1))
 			{
 				/*
 				 *	Adding NULL-terminated string  character and jump to the right side	
 				 */
-			
 				char *tmp=realloc(r_side,(++ch)*sizeof(char));
 				if(!tmp)
 				{
@@ -189,10 +174,22 @@ static void __ParseLine(char const* line)
 				r_side=tmp;		
 				*(r_side+ch-1)='\0';
 			}
+			else if(isspace(*(line+i)))
+				continue;
+			else
+			{
+				char *tmp=realloc(r_side,(++ch)*sizeof(char));
+				if(!tmp)
+				{
+					free(r_side);
+					bail("[CONFIG_PARSER] Not enough Memory");
+				}
+				r_side=tmp;
+				*(r_side+ch-1)=*(line + i);
+			}
 		
 		}
 		
-
 	 __AddEntry(l_side,r_side,(!r_side)?0:strlen(r_side));
 
 	free(l_side);

@@ -1,7 +1,7 @@
 #ifndef CONFIG_PARSER
 #define CONFIG_PARSER
 
-#define BUFFER_LENGTH 255 //The standard guarantees that a line can contain up to 254 characters 
+#define BUFFER_LENGTH 255 
 
 typedef struct Map 
 {

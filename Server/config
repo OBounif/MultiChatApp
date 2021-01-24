@@ -1,0 +1,4 @@
+DB_NAME=ChatRoom
+DB_PASSWORD=A!a123456789
+DB_USER=root
+DB_HOST=localhost
