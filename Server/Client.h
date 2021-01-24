@@ -24,7 +24,7 @@ typedef struct Client
 
 
 Client* __AddClient(char*,char*,char*,char*);
-Client* __GetClient(unsigned);
+Client* __GetClient(char const*);
 
 void __FreeClient(Client**);
 

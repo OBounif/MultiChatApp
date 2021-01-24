@@ -60,8 +60,7 @@ void* __Get(char const* key)
 
 void __FreePData(void)
 {
-	Map* entry=parsed_data;
-	__FreePDataIntern(entry);
+	__FreePDataIntern(parsed_data);
 	parsed_data=NULL;
 }
 
@@ -190,8 +189,10 @@ static void __ParseLine(char const* line)
 		
 		}
 		
-	 __AddEntry(l_side,r_side,(!r_side)?0:strlen(r_side));
+	 
+	__AddEntry(l_side,r_side,(!r_side)?0:strlen(r_side));
 
+	
 	free(l_side);
 	free(r_side);
 }
