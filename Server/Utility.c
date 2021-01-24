@@ -23,6 +23,6 @@ void print_log(const char* str)
 
 void print_logerr(const char* str)
 {
-	fprintf(stderr,"%s : %s \n",str,strerror(errno));
+	fprintf(stderr,"%s\n",str);
 }
 

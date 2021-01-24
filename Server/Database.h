@@ -2,9 +2,11 @@
 #define DATABASE_H
 
 
-bool initDatabaseConnection(void);
-void freeDatabaseConnection(void);
-bool getServerStatus(void);
+MYSQL* __GetMysqlCon(void);
 
-
+void __InitDatabaseConnection(void);
+void __FreeDatabaseConnection(void);
+void __AnormalAbortCon(char const*);
+void __PrintDError(char const*);
+bool __GetSMysqlConStatus(void);
 #endif

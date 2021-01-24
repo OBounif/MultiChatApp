@@ -1,12 +1,13 @@
 #ifndef CLIENT_H
 #define CLIENT_H
 
-#include <stdbool.h>
+
+#define BUFFER_LENGTH 300
 
 #define NICKNAME 20
 #define PASSWORD 20
 #define EMAIL	 20 
-#define LAST_IP	 30
+#define LAST_IP	 20
 #define RANK	 20
 
 
@@ -14,21 +15,21 @@ typedef struct Client
 {
 	unsigned id;
 	char *userName;
-	char *email;
 	char *password;
 	char *lastIp;
 	char *rank;
-	struct tm lastConnection;
 	bool isBanned;
 
 }Client;
 
 
-Client* addClient(unsigned,char*,char*,char*,char*,char*,char*,bool);
-Client* modClient(unsigned,char*,char*,char*,char*,char*,char*,bool);
-Client* getClient(unsigned)
+Client* __AddClient(char*,char*,char*,char*);
+Client* __GetClient(unsigned);
 
-bool removeClient(unsigned);
+void __FreeClient(Client**);
+
+bool __ModClient(unsigned);
+bool __RemoveClient(unsigned);
 
 #endif
 
