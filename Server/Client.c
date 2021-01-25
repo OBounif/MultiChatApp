@@ -15,9 +15,10 @@ static bool __IsExist(char const*,MYSQL *);
 
 
 char* SQL_INSERT="INSERT INTO USERS (userName,password,lastIp,role,isBanned) values('%s','%s','%s','%s',%d)";
+char* SQL_DELETE="DELETE from USERS where id=%d"; 
+char* SQL_UPDATE="UPDATE USERS SET %s='%s' where id=%d";
 char* SQL_SELECT="SELECT * from USERS where userName='%s'"; 
 char* SQL_SELECTID="SELECT ID from USERS where userName='%s'"; 
-
 
 
 Client* __AddClient(char* userName,char* password,char* lastIp,char*rank)
@@ -29,7 +30,7 @@ Client* __AddClient(char* userName,char* password,char* lastIp,char*rank)
 
 	if(!connection)
 	{	
-		print_logerr("Connection is not initiaded Cannot add client");	
+		print_logerr("{ADD}Connection has not been initialized");	
 		return NULL;
 	}
 	
@@ -52,12 +53,13 @@ Client* __AddClient(char* userName,char* password,char* lastIp,char*rank)
 				
 	if(mysql_query(connection,buffer))	
 	{
-		__PrintDError("Error while executing insert statement");
+		__PrintDError("{ADD}Error while executing insert statement");
 		__FreeClient(&client);
 		return NULL;
 	}
 
-	client->id=mysql_insert_id(connection); // Get last inserted id row
+	
+	client->id=mysql_insert_id(connection); // Get last inserted id row work only if we used auto-increment opt
 		
 	return client;
 }
@@ -76,20 +78,20 @@ Client* __GetClient(char const* userName)
 	
 	if(!connection)
 	{	
-		print_logerr("Connection is not initiaded Cannot add client");	
+		print_logerr("{GET}Connection has not been initialized");	
 		return NULL;
 	}
 	
 	if(mysql_query(connection,buffer))	
 	{
-		__PrintDError("Error while executing select statement");
+		__PrintDError("{GET}Error while executing select statement");
 		return NULL;
 	}
 		
 	MYSQL_RES *result=mysql_store_result(connection);
 	if(!result)
 	{
-		__PrintDError("Error while storing results ");
+		__PrintDError("{GET}Error while storing results ");
 		return NULL;
 	}
 
@@ -110,6 +112,64 @@ Client* __GetClient(char const* userName)
 	return client;
 }
 
+bool __ModClient(unsigned id,char const* field,char const* value)
+{
+	MYSQL *connection = __GetMysqlCon();
+	char buffer[BUFFER_LENGTH];
+	
+	Bzero(buffer,sizeof buffer);
+	
+	sprintf(buffer,SQL_UPDATE,field,value,id);
+
+	if(!connection)
+	{	
+		print_logerr("{MOD}Connection has not been initialized");	
+		return false;
+	}
+	
+	if(mysql_query(connection,buffer))	
+	{
+		__PrintDError("{MOD}Error while executing update statement");
+		return false;
+	}
+	else
+	{
+		if(mysql_affected_rows(connection)!=1)
+			return false;
+				
+	}
+	return true;		
+}
+
+
+bool __RemoveClient(unsigned id)
+{
+	MYSQL *connection = __GetMysqlCon();
+	char buffer[BUFFER_LENGTH];
+	
+	Bzero(buffer,sizeof buffer);
+	
+	sprintf(buffer,SQL_DELETE,id);
+
+	if(!connection)
+	{	
+		print_logerr("{REM}Connection has not been initialized");	
+		return false;
+	}
+	
+	if(mysql_query(connection,buffer))	
+	{
+		__PrintDError("{REM}Error while executing delete statement");
+		return false;
+	}
+	else
+	{
+		if(mysql_affected_rows(connection)!=1)
+			return false;
+				
+	}
+	return true;
+}
 
 
 
@@ -130,7 +190,7 @@ static Client* __BuildClient(char* userName,char* password,char* lastIp,char* ra
 	
 	if(!new)	
 	{
-		print_logerr("There is no enough memory for a new client try again later");
+		print_logerr("There is no enough memory for a new client");
 		return NULL;
 	}
 	
@@ -160,14 +220,14 @@ static bool __IsExist(char const* userName,MYSQL *connection)
 	
 	if(mysql_query(connection,buffer))	
 	{
-		__PrintDError("Error while executing select statement");
+		print_logerr("{ISE}Connection has not been initialized");	
 		return true;
 	}
 
 	MYSQL_RES *result=mysql_store_result(connection);
 	if(!result)
 	{
-		__PrintDError("Error while storing results ");
+		__PrintDError("{ISE}rror while storing results ");
 		return true;
 	}
 	MYSQL_ROW row;
@@ -213,4 +273,3 @@ static unsigned __GetClientId(char const* userName,MYSQL* connection)
 
 	return id;	
 }
-

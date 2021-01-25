@@ -25,8 +25,6 @@ void __InitDatabaseConnection(void)
 	print_log("Connection has been initiated succesful\nEstablishing connection to Database ...");
 	mysqlServerStatus=true;
 	
-	__ParseCfgFile("config");
-	
 	if(mysql_real_connect(connection,(const char*)__Get("DB_HOST"),(const char*)__Get("DB_USER"),(const char*)__Get("DB_PASSWORD"),(const char*)__Get("DB_NAME"),0,NULL,0)==NULL)
 	{
 		__AnormalAbortCon("Failed to establish connection to Database");

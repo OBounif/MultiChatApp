@@ -28,6 +28,11 @@ void __ParseCfgFile(char const* file)
 	
 	while(fgets(buffer,sizeof buffer,in))
 	{
+		if(buffer[0]=='#')
+		{
+			Bzero(buffer,sizeof(buffer));
+			continue;
+		}
 		__ParseLine(buffer);
 		Bzero(buffer,sizeof(buffer));
 	}	
@@ -190,9 +195,11 @@ static void __ParseLine(char const* line)
 		}
 		
 	 
+	if(!l_side || !r_side)
+		return;		
 	__AddEntry(l_side,r_side,(!r_side)?0:strlen(r_side));
 
-	
 	free(l_side);
 	free(r_side);
 }
+

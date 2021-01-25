@@ -28,7 +28,7 @@ Client* __GetClient(char const*);
 
 void __FreeClient(Client**);
 
-bool __ModClient(unsigned);
+bool __ModClient(unsigned,char const*,char const*);
 bool __RemoveClient(unsigned);
 
 #endif

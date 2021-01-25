@@ -12,7 +12,7 @@ void Bzero(void *ptr,size_t size)
 
 void bail(const char* str)
 {
-	fprintf(stderr,"%s:%s",str,strerror(errno));
+	fprintf(stderr,"%s:%s\n",str,strerror(errno));
 	exit(EXIT_FAILURE);
 }
 
