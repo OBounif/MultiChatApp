@@ -19,13 +19,15 @@ bool __AddHolder(int sock,char* h_name,char* ip)
 		print_logerr("[HOLDER] Not enough memory ");
 		return false;
 	}
-	new->sock=sock;
+	
 	new->h_name=malloc(H_NAMESIZE*sizeof(char*));
 	new->h_name=malloc(IP_SIZE*sizeof(char*));
 	new->client=NULL;
 	
 	
+	new->sock=sock;
 	strcpy(new->h_name,(h_name)?h_name:"NULL");		
+	strcpy(new->ip,ip);		
 	
 	
 	
