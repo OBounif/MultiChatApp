@@ -1,6 +1,9 @@
 #ifndef HOLDER_H
 #define HOLDER_H
 
+#define H_NAMESIZE 100
+#define IP_SIZE 20
+
 typedef struct Holder
 {
 	int sock;
@@ -9,6 +12,11 @@ typedef struct Holder
 	Client* client;
 	struct Holder* next;
 }Holder;
+
+
+bool __AddHolder(int,char*,char*ip);
+bool __HSetClient(int,Client*);
+bool __RemoveHolder(int);
 
 
 #endif
