@@ -7,8 +7,9 @@
 #include "Utility.h"
 
 static void __FreeHolder(Holder*);
-	
-Holder *holder=NULL;
+static Holder *holder=NULL;
+
+
 
 bool __AddHolder(int sock,char* h_name,char* ip)
 {

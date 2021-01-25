@@ -14,11 +14,11 @@ static Client* __BuildClient(char*,char*,char*,char*);
 static bool __IsExist(char const*,MYSQL *);
 
 
-char* SQL_INSERT="INSERT INTO USERS (userName,password,lastIp,role,isBanned) values('%s','%s','%s','%s',%d)";
-char* SQL_DELETE="DELETE from USERS where id=%d"; 
-char* SQL_UPDATE="UPDATE USERS SET %s='%s' where id=%d";
-char* SQL_SELECT="SELECT * from USERS where userName='%s'"; 
-char* SQL_SELECTID="SELECT ID from USERS where userName='%s'"; 
+static char* SQL_INSERT="INSERT INTO USERS (userName,password,lastIp,role,isBanned) values('%s','%s','%s','%s',%d)";
+static char* SQL_DELETE="DELETE from USERS where id=%d"; 
+static char* SQL_UPDATE="UPDATE USERS SET %s='%s' where id=%d";
+static char* SQL_SELECT="SELECT * from USERS where userName='%s'"; 
+static char* SQL_SELECTID="SELECT ID from USERS where userName='%s'"; 
 
 
 Client* __AddClient(char* userName,char* password,char* lastIp,char*rank)

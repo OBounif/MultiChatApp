@@ -9,8 +9,8 @@
 
 
 
-MYSQL* connection=NULL;
-bool mysqlServerStatus=false;
+static MYSQL* connection=NULL;
+static bool mysqlServerStatus=false;
 
 
 

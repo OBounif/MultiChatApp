@@ -28,6 +28,7 @@ void __ParseCfgFile(char const* file)
 	
 	while(fgets(buffer,sizeof buffer,in))
 	{
+		//Escapte lines that start with "#"
 		if(buffer[0]=='#')
 		{
 			Bzero(buffer,sizeof(buffer));
