@@ -10,8 +10,20 @@
 #include "Server.h"
 #include "Utility.h"
 #include "config_parser.h"
+#include "Color.h"
 
-int __InitServer()
+
+static char const* SERVER_INFO=WHITE_B"[SERVER INFO] : %s";
+static char const* WELCOME_MESSAGE=GREEN_N"Welcome to ChatRoom V1.0\n"RESET;
+static char const* GOODBYE_MESSAGE=GREEN_N"GOOD BYE HAVA A NICE DAY\n"RESET;
+
+static char const* BAN_MESSAGE=RED_N"YOU HAVE BEEN BANNED PERMANETLY BY "RESET WHITE_B"%s"RESET"\n";
+static char const* KICK_MESSAGE=RED_N"YOU HAVE BEEN KICKED BY "RESET WHITE_B"%s"RESET"\n";
+static char const* HELP_MESSAGE=WHITE_B"who : see who is online\npm : send private message\nkick : kick a user from the server\nban : ban permantetly a user from the server\nclose : disconect from the server\n"RESET;
+
+
+
+int __InitServer(void)
 {
 	int server_fd; 
 	unsigned len_inet;
@@ -71,8 +83,29 @@ int __InitServer()
 }
 
 
+
+
+void __HandleMessage(int sock,PACKET* ms)
+{
+
+}
+
+
+static void __SendMSG(int sock,PACKET*ms)
+{
+	
+}
+
+
+static void  __SendBroadCast(PACKET*ms)
+{
+
+
+}
+
+
+
 void main()
 {
-	__ParseCfgFile("config");
-	__InitServer();
+
 }

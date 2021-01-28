@@ -14,6 +14,10 @@ typedef struct Holder
 }Holder;
 
 
+
+char* __FindClient(int);
+
+
 bool __AddHolder(int,char*,char*ip);
 bool __HSetClient(int,Client*);
 bool __RemoveHolder(int);

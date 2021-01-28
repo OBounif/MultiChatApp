@@ -4,26 +4,32 @@
 #define MAX_PORTNUMBER 60000
 #define MIN_PORTNUMBER 0
 
-#define MSG_SIZE 500
-#define PACKET_SIZE 700
 
+#define DATA_SIZE 255
+#define USER_LENGTH 20 
+/*
+ *	
+ *	BYTE ORIENTED
+	
+ 	typedef struct
+	{
+		unsigned id;
+		void *data;
+	}PACKET;
+*
+*/
 
-typedef enum
-{
-	NONE,HELP,MP,WHO,LOGOUT,LOGIN,HELP_ERROR,MP_ERROR,WHO_ERROR,LOGOUT_ERROR,LOGIN_ERROR,NONE_ERROR,UNKOWN
-}Msg_type;
-
+/*	Character oriented	*/
 
 typedef struct
 {
-	Msg_type type;
-	char user[20];	
-	char msg[MSG_SIZE];
-}Msg;
+	char user[USER_LENGTH];
+	char msg[DATA_SIZE];
+}PACKET;
 
 
 
-int __InitServer();
-
+void __HandleMessage(int,PACKET*);
+int __InitServer(void);
 
 #endif
