@@ -4,6 +4,7 @@
 #define H_NAMESIZE 100
 #define IP_SIZE 20
 
+
 typedef struct Holder
 {
 	int sock;
@@ -15,8 +16,9 @@ typedef struct Holder
 
 
 
-char* __FindClient(int);
-
+Holder* __GetHolderBySock(int);
+Holder* __GetHolderByCName(char*);
+Holder* __GetHolder(void);
 
 bool __AddHolder(int,char*,char*ip);
 bool __HSetClient(int,Client*);

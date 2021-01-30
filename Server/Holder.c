@@ -1,12 +1,13 @@
 #include <stdlib.h>
-#include <stdbool.h>
 #include <string.h>
+#include <stdbool.h>
 
 #include "Client.h"
 #include "Holder.h"
 #include "Utility.h"
 
 static void __FreeHolder(Holder*);
+
 static Holder *holder=NULL;
 
 
@@ -93,6 +94,38 @@ bool __RemoveHolder(int sock)
 	return false;	
 }
 
+Holder* __GetHolderByCName(char* name)
+{
+	Holder* curr=holder;
+
+	while(curr)
+	{
+		if(curr->client)
+			if(!strcmp(holder->client->userName,name))
+				return curr;
+		curr=curr->next;
+	}
+
+	return NULL;
+}
+
+Holder* __GetHolderBySock(int sock)
+{
+	Holder* curr=holder;
+	while(curr)
+	{
+		if(curr->sock==sock)
+				return curr;
+		curr=curr->next;
+	}
+
+	return NULL;
+}
+
+Holder* __GetHolder(void)
+{
+	return holder;
+}
 
 static void __FreeHolder(Holder *holder)
 {
