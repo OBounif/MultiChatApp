@@ -1,7 +1,10 @@
 #ifndef CONFIG_PARSER
 #define CONFIG_PARSER
 
+
+#ifdef  CONFIG
 #define BUFFER_LENGTH 255 
+#endif
 
 typedef struct Map 
 {

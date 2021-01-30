@@ -3,11 +3,11 @@
 #include <string.h>
 #include <stdbool.h>
 #include <mysql.h>
-
-
-#include "Client.h"
 #include "Utility.h"
 #include "Database.h"
+
+#define CLIENT
+#include "Client.h"
 
 static unsigned __GetClientId(char const*,MYSQL*);
 static Client* __BuildClient(char*,char*,char*,char*);

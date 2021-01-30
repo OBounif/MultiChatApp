@@ -1,6 +1,7 @@
 #ifndef CLIENT_H
 #define CLIENT_H
 
+#ifdef CLIENT
 
 #define BUFFER_LENGTH 300
 
@@ -10,6 +11,7 @@
 #define LAST_IP	 20
 #define RANK	 20
 
+#endif
 
 typedef struct Client 
 {

@@ -5,6 +5,7 @@
 
 
 #include "Utility.h"
+#define CONFIG
 #include "config_parser.h"
 
 
