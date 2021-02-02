@@ -1,12 +1,16 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
 
-#include "Client.h"
+#include "User.h"
 #include "Holder.h"
 #include "Utility.h"
 
+static bool __IsExist(unsigned);
 static void __FreeHolder(Holder*);
+static void __FreeAllHoldersIntern(Holder*);
+
 
 static Holder *holder=NULL;
 
@@ -23,7 +27,7 @@ bool __AddHolder(int sock,char* h_name,char* ip)
 	}
 	
 	new->h_name=malloc(H_NAMESIZE*sizeof(char*));
-	new->h_name=malloc(IP_SIZE*sizeof(char*));
+	new->ip=malloc(IP_SIZE*sizeof(char*));
 	new->client=NULL;
 	
 	
@@ -46,6 +50,9 @@ bool __AddHolder(int sock,char* h_name,char* ip)
 bool __HSetClient(int sock,Client *cl)
 {
 	Holder* curr=holder;
+	
+	if(__IsExist(cl->id))
+		return false;
 	
 	while(curr)
 	{
@@ -101,7 +108,7 @@ Holder* __GetHolderByCName(char* name)
 	while(curr)
 	{
 		if(curr->client)
-			if(!strcmp(holder->client->userName,name))
+			if(!strcmp(curr->client->userName,name))
 				return curr;
 		curr=curr->next;
 	}
@@ -127,8 +134,39 @@ Holder* __GetHolder(void)
 	return holder;
 }
 
+void __FreeAllHolders()
+{
+	__FreeAllHoldersIntern(holder);
+	holder=NULL;
+}
+
+static void __FreeAllHoldersIntern(Holder* holder)
+{
+	if(!holder)
+		return;
+	__FreeAllHoldersIntern(holder->next);
+	__FreeHolder(holder);
+}
+static bool __IsExist(unsigned id)
+{
+
+	Holder* curr=holder;
+	while(curr)
+	{
+		if(curr->client)
+			if(curr->client->id == id)
+				return true;
+		curr=curr->next;
+	}
+	return false;
+}
+
+
 static void __FreeHolder(Holder *holder)
 {
+	if(!holder)
+		return;
+
 	free(holder->h_name);
 	free(holder->ip);
 	__FreeClient(&holder->client);

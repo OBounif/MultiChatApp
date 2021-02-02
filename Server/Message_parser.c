@@ -40,25 +40,41 @@ Msg*  __ParsePACKET(PACKET* packet)
 
 NORMAL_MESSAGE:
 	new->type=NONE;	
-	length=0;
 	i=0;
-	
-	while(packet->msg[i++]!='\0' && i<(DATA_SIZE-1))
-		length++;	
-				
-	if(length > 0)
+	new->data=malloc(sizeof(char));
+	if(!new->data)
 	{
-		if(i==DATA_SIZE-1)
+		print_logerr("[MESSAGE PARSER] Not enough Memory");
+		new->type=TRY_AGAIN;
+		goto END;	
+	}
+	
+	for(;i<(DATA_SIZE-1) && packet->msg[i]!='\0';i++)
+	{		
+		if(packet->msg[i]=='\n')
+			continue;
+		
+		char* tmp=realloc(new->data,(++length)*sizeof(char));
+		if(!tmp)
 		{
-			/* Long Message are rejected  */
-			packet->msg[DATA_SIZE-1]='\0'; // <-- for not having a beautiful segfault error when i use this variable for reading or copying ...
-			new->type=NONE_ERROR;		
+			print_logerr("[MESSAGE PARSER] Not enough memory"); 	
+			new->type=TRY_AGAIN;
+			goto END;	
 		}
-		else
+		new->data=tmp;
+		new->data[length-1]=packet->msg[i];	
+	}
+	if(i<=DATA_SIZE-1 || packet->msg[i]=='\0' )
+	{
+		char* tmp=realloc(new->data,(++length)*sizeof(char));
+		if(!tmp)
 		{
-			new->data=malloc(length*sizeof(char));	
-			strcpy(new->data,packet->msg);
+			print_logerr("[MESSAGE PARSER] Not enough memory"); 	
+			new->type=TRY_AGAIN;
+			goto END;	
 		}
+		new->data=tmp;
+		new->data[length-1]='\0';
 	}
 	goto END;
 
@@ -66,9 +82,6 @@ COMMAND_MESSAGE:
 	i++;
 	char* command=NULL;				
 	
-	
-	if(isspace(packet->msg[i]))
-		printf("%d\n",i);
 	
 	while( isspace(packet->msg[i]) && i <(DATA_SIZE-1) )	
 	{
@@ -85,7 +98,8 @@ COMMAND_MESSAGE:
 	{
 		if(isblank(packet->msg[i]))
 			break;
-
+		if(packet->msg[i]=='\n')
+			continue;
 		
 		char* tmp=realloc(command,(++length)*sizeof(char));
 		if(!tmp)
@@ -116,7 +130,7 @@ COMMAND_MESSAGE:
 		*(command+length-1)='\0';		
 	}
 
-	printf("Command = %s\n",command);
+	
 
 	if(!strcasecmp(command,"who"))
 		 __ProcessWhoC(packet->msg,new,i);
@@ -132,6 +146,8 @@ COMMAND_MESSAGE:
 		 __ProcessLogoutC(packet->msg,new,i);
 	else if(!strcasecmp(command,"register"))
 		 __ProcessRegC(packet->msg,new,i);
+	else if(!strcasecmp(command,"ban"))
+		 __ProcessBanC(packet->msg,new,i);
 	else
 		new->type=UNKNOWN_C;
 
@@ -178,6 +194,7 @@ static void __ProcessMpC(char* data,Msg* ms,int index)
 	
 	//Read to_user
 	ms->to_user=malloc(sizeof(char));
+	ms->type=MP_N;
 
 	if(!ms->to_user)
 	{
@@ -232,6 +249,11 @@ static void __ProcessMpC(char* data,Msg* ms,int index)
 
 	while(index < DATA_SIZE-1 && data[index]!='\0')
 	{
+		if(data[index]=='\n')
+		{
+			index++;
+			continue;
+		}
 		char* tmp=realloc(ms->data,(++ch)*sizeof(char));
 		if(!tmp)
 		{
@@ -261,17 +283,16 @@ static void __ProcessMpC(char* data,Msg* ms,int index)
 		ms->data[ch-1]='\0';
 	}
 
-	ms->type=MP_N;
 }
 
 static void __ProcessLoginC(char* data,Msg* ms,int index)
 {
 	
 	unsigned ch=0;
-	
 	//Read from_user aka userName
 	ms->from_user=malloc(sizeof(char));
-
+	ms->type=LOGIN_N;
+	
 	if(!ms->from_user)
 	{
 		print_logerr("[MESSAGE PARSER] Not enough memory"); 	
@@ -322,9 +343,18 @@ static void __ProcessLoginC(char* data,Msg* ms,int index)
 		ms->type=TRY_AGAIN;
 		return ;
 	}
+	
+	while(index < DATA_SIZE-1 && isspace(data[index]))
+		index++;
+
 
 	while(index < DATA_SIZE-1 && data[index]!='\0')
 	{
+		if(data[index]=='\n')
+		{
+			index++;
+			continue;
+		}
 		char* tmp=realloc(ms->data,(++ch)*sizeof(char));
 		if(!tmp)
 		{
@@ -353,19 +383,17 @@ static void __ProcessLoginC(char* data,Msg* ms,int index)
 		ms->data=tmp;
 		ms->data[ch-1]='\0';
 	}
-
-	ms->type=LOGIN_N;
 }
 
 
 static void __ProcessRegC(char* data,Msg* ms,int index)
 {
-	
+	ms->type=NOT_AVAILABLE;
 }
 
 static void __ProcessLogoutC(char* data,Msg* ms,int index)
 {
-
+	ms->type=NOT_AVAILABLE;
 }
 
 
@@ -419,7 +447,6 @@ static void __ProcessBanC(char* data,Msg* ms,int index)
 		ms->from_user[ch-1]='\0';
 	}
 
-	//Read data aka password
 	while(index < DATA_SIZE && data[index]!='\0')
 	{
 		if(!isspace(data[index]))
@@ -430,7 +457,7 @@ static void __ProcessBanC(char* data,Msg* ms,int index)
 		index++;
 	}
 
-	ms->type=BAN_N;	
+	ms->type=NOT_AVAILABLE;	
 }
 
 void __FreeMsg(Msg** ms)

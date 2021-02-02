@@ -11,74 +11,97 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
+#include <signal.h>
+#include <mysql.h>
 
+#include "User.h"
+#include "Holder.h"
 #include "Server.h"
+#include "Database.h"
+#include "config_parser.h"
+#include "Utility.h"
 
 #define MAX_CLIENTS 50
 
+void sighandler(int signum)
+{
+	print_log("Shuting down the Server");
+
+ 	__FreeDatabaseConnection();
+ 	__FreePData();
+	__FreeAllHolders();
+
+	exit(EXIT_SUCCESS);
+}
+
+
 int main(int argv,char* argc[])
 {
+
+	if(signal(SIGINT,sighandler)==SIG_ERR)
+		bail("signal handler()");
 	
-	fd_set read_set,wread_set;
+
+	fd_set read_set,wread_set; 
 	fd_set write_set,wwrite_set;
 	
 	unsigned int max_fds; /** Max fds + 1 **/
+	unsigned int cln_count=0;
 	
 	int len_inet=sizeof(struct sockaddr_in);
 	int len_inet2=sizeof(struct sockaddr_in);
+	
 	struct sockaddr_in cln_addr;
+
 	int srv_socket;
 	int cln_socket;
-
+	unsigned r_byte;
+	
 	struct hostent *hp;
+	
 	FILE *log;
-	char buf[MSG_SIZE];
 	
 	time_t tm=time(NULL);
 	struct tm *date=NULL;
-	unsigned int cln_count=0;
-
-	Msg *msg=malloc(sizeof(Msg));
-	if(msg==NULL)
+	
+	PACKET *packet=malloc(sizeof(PACKET));
+	if(!packet)
 	{
-		fprintf(stderr,"Not enought space for msg buffer\n");
-		exit(1);
+		bail("[SERVER] Not enough Memory");
 	}
 	
-	
-	/**** Use the address from the command line ****/
-	if(argv>=2)
-		srv_socket=init_Server(argc[1],0,10);
-	else if (argv>=3)
-		srv_socket=init_Server(argc[1],htons(atoi(argc[2])),10);
-	else
-		srv_socket=init_Server(NULL,0,10);
-
-	if(!initDatabaseConnection())
+	if(argv < 2 )
 	{
-		close(srv_socket);
-		exit(1);	
-	}	
-	FD_ZERO(&read_set); /**** Intialize read_set ****/
+		fprintf(stderr,"usage : %s <config_file> \n",argc[0]);
+		return EXIT_FAILURE;
+	}
 	
-	FD_SET(srv_socket,&read_set); /**** Adding server socket to the set otherwise we cant receive connection event ****/
+	__ParseCfgFile(argc[1]);
+	__InitDatabaseConnection();
+	srv_socket=__InitServer();
+			
+
+	FD_ZERO(&read_set); /**** Intialize read_set ****/
+	FD_SET(srv_socket,&read_set); /**** Adding server socket to the set otherwise we can't receive connections events ****/
 	
 	max_fds=srv_socket + 1 ;
 	
 	/*** Open file log ***/
 	log=fopen("log.file","a+");
 	if (log==NULL)
-		fprintf(stderr,"Error while opening file : %s\n",strerror(errno));
+		print_logerr("[SERVER] Cannot open logfile");
+	
 	while(true)
 	{
 		
-		/**** Copy the read_set on workingread__set this is because select call is destructive which mean select return the set will contain only socket that have data to read ***/
-
+		Bzero(packet,sizeof(PACKET));
+		/**** Copy the read_set on working read__set this is because select call is destructive which mean select return the set will contain only socket that have data to read ***/
 		wread_set=read_set;
 
-		if(select(max_fds,&wread_set,NULL,NULL,NULL)<0)
+		if(select(max_fds,&wread_set,NULL,NULL,NULL)<0) // <--- select will block until an events arrives
 			bail("select()");
 	
+		
 		for( int i=0;i<max_fds;i++)
 		{
 			/*** Refreshing the time ***/
@@ -87,20 +110,18 @@ int main(int argv,char* argc[])
 			char *mem=asctime(date);
 			*(mem+strlen(mem)-1)='\0'; // removing the \n charactere. Info : asctime works on a static buffer
 
-			/** Zeroing Buffer memory **/
-			ZeroMemory(msg,sizeof (Msg));	
 			
-			/**** Zeroing Client Address byte s***/
-			ZeroMemory(&cln_addr,len_inet);	
+			/**** Zeroing Client Address byte ***/
+			Bzero(&cln_addr,len_inet);	
 			
 			if(FD_ISSET(i,&wread_set))
 			{
 			
 				if(i==srv_socket)
 				{
-					/** This mean that the server has a connection that need to be accepted.
+					/* This mean that the server has a connection that need to be accepted.
 					    Connections are considered a read event that select will respond to 
-					**/
+					*/
 					cln_socket=accept(srv_socket,(struct sockaddr*)&cln_addr,&len_inet);
 					
 					if(++cln_count>MAX_CLIENTS)
@@ -113,96 +134,60 @@ int main(int argv,char* argc[])
 					{  					
 						max_fds=((cln_socket+1)>max_fds)?(cln_socket+1):max_fds;
 
-						
 						/**************** Save client information *******************/
 						hp=gethostbyaddr(&cln_addr.sin_addr,sizeof(cln_addr.sin_addr),cln_addr.sin_family);
 							
 						if(log!=NULL)
 						{
 							if(!hp)
-								fprintf(log,"[%s] %s:%s\n",((date==NULL)?"NULL":mem),inet_ntoa(cln_addr.sin_addr),hstrerror(h_errno));
+								fprintf(log,"[%s] %s:%s\n",((!date)?"NULL":mem),inet_ntoa(cln_addr.sin_addr),hstrerror(h_errno));
 							else	
-								fprintf(log,"[%s] : %s:%s\n",((date==NULL)?"NULL":mem),inet_ntoa(cln_addr.sin_addr),hp->h_name);
+								fprintf(log,"[%s] : %s:%s\n",((!date)?"NULL":mem),inet_ntoa(cln_addr.sin_addr),hp->h_name);
 							fflush(log);
 						}
 						
-						fprintf(stdout,"[%s] : %s:%s client connected\n",((date==NULL)?"NULL":mem),inet_ntoa(cln_addr.sin_addr),(hp==NULL)?"Unkown":hp->h_name);
+						fprintf(stdout,"[%s] : %s:%s Client connected\n",((!date)?"NULL":mem),inet_ntoa(cln_addr.sin_addr),(!hp)?"Unkown":hp->h_name);
+							
 
-						/****** Holding client socket in a holder *******/
-						if(!addHolder(cln_socket,(hp==NULL)?"Unkown":hp->h_name,inet_ntoa(cln_addr.sin_addr)))
+						/****** Adding holder which gonna hold the client *******/
+						if(!__AddHolder(cln_socket,(!hp)?"UNKNOWN":hp->h_name,inet_ntoa(cln_addr.sin_addr)))
 						{
 							close(cln_socket);
 							continue;
 						}
 						else
-							fprintf(stdout,"[%s] : Adding a holder for sock %d\n",(date==NULL)?"NULL":mem,cln_socket);
+							fprintf(stdout,"[%s] : Adding a holder for sock %d\n",(!date)?"NULL":mem,cln_socket);
+						
+
+						
 						/*************** Add client_socket to the read_set **********/
 						FD_SET(cln_socket,&read_set);
+					
+						__SendWELCM(cln_socket);
 					}
+					
 				}
 				else
 				{
-					Holder* holder=findClientbyHolder(i);
-					char buff1[20];
-					strcpy(buff1,holder->ip);
-					
-					if(recv(i,msg,sizeof(Msg),0)==0)
+					r_byte=(int)recv(i,packet,sizeof(PACKET),0);
+					if( !r_byte )
 					{
-						if(holder->client==NULL)
-						{
-							if(!removeHolder(i))
-								fprintf(stderr,"[%s] : Cant remove force_end_task holder for client %s\n",(date==NULL)?"NULL":mem,buff1);
-							else
-								fprintf(stdout,"[%s] removing forced_end_process holder for client  %s\n",(date==NULL)?"NULL":mem,buff1);
-							FD_CLR(i,&read_set);
-							close(i);
-						}
+						if(!__RemoveHolder(i))
+							fprintf(stderr,"[%s] : Can't remove holder for sock %d\n",(!date)?"NULL":mem,i);
 						else
-						{
-							char buff[50];
-							msg->type=NONE;
-							strcpy(msg->user,"NONE");
-							sprintf(buff,"[!] %s has leave the chat\n",holder->client->nickName);
-							strcpy(msg->msg,buff);
-							if(!removeHolder(i))
-								fprintf(stderr,"[%s] Cant remove forced_end_process holder for sock %s\n",(date==NULL)?"NULL":mem,buff1);
-							else
-								fprintf(stdout,"[%s] removing forced_end_process holder for sock  %s\n",(date==NULL)?"NULL":mem,buff1);
-
-							FD_CLR(i,&read_set);
-							close(i);
-							broadCast(msg,i);
-						}
+							fprintf(stdout,"[%s] Removing holder for sock  %d\n",(!date)?"NULL":mem,i);
+						FD_CLR(i,&read_set);
+						close(i);
+						continue;	
 					}
-					else
-					{	
-						if(msg->type==NONE)
-						{
-							printf("Ww\n");
-							broadCast(msg,i);
-						}
-						else if (msg->type==LOGIN)
-						{
-							fprintf(stdout,"[%s] : Receiving Login request from sock %s\n",(date==NULL)?"NULL":mem,buff1);
-							processLogin(i,msg);
-						}
-						else if (msg->type==LOGOUT)
-						{
-							if(!processLogout(i,msg))
-								continue;
-							else
-								FD_CLR(i,&read_set);
-						}
-						//else if (msg->type==MP)
-						//else if (msg->type==WHO)
-						//else if (msg->type==HELP)
-						else
-						{	
-							removeHolder(i);	
-							FD_CLR(i,&read_set);
-							close(i);
-						}
-					}
+					if( r_byte < 0)
+					{
+						print_log("[SERVER] Read PACKET ERROR ");
+						continue;
+					}	
+					
+					fprintf(stdout,"[SERVER] READ PACKET SIZE OF %d from sock %d\n",r_byte,i);	
+					__HandleMessage(i,packet);
 				}
 			}
 		}
@@ -211,5 +196,5 @@ int main(int argv,char* argc[])
 	
 	/****** Control never get here ******/ 
 
-	return 0;
+	return EXIT_SUCCESS;
 }

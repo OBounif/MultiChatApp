@@ -24,5 +24,5 @@ bool __AddHolder(int,char*,char*ip);
 bool __HSetClient(int,Client*);
 bool __RemoveHolder(int);
 
-
+void __FreeAllHolders(void);
 #endif

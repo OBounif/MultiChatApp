@@ -6,20 +6,25 @@
 
 ##MACR DEFINITIONS
 
+LDFLAGS= ##link not here
 CC= gcc
 DEBUG=false
 RM=rm -rf
 
 
-OBJS= Client.o\
+OBJS= User.o\
+    Message_parser.o\
+    config_parser.o\
+    Database.o\
+    Utility.o\
+    mainSrv.o\
     Server.o\
-    mainSrv.o
-
+    Holder.o
 
 ifeq ($(DEBUG),true)
 	CFLAGS= -g -Wall -v `mysql_config --cflags`
 else
-	CFLAGS=`mysql_config --cflags`
+	CFLAGS=-w `mysql_config --cflags`
 endif
 
 all:$(OBJS)

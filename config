@@ -1,5 +1,5 @@
 #Server Configuration
-SERVER_IP=127.0.0.1
+SERVER_IP=127.0.0.2
 SERVER_PORT=2500
 SERVER_BACKLOG=10
 #Database Configuration

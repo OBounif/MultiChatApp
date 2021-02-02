@@ -5,8 +5,7 @@
 #define MIN_PORTNUMBER 0
 
 
-#define DATA_SIZE 255
-#define USER_LENGTH 20 
+#define DATA_SIZE 355
 /*
  *	
  *	BYTE ORIENTED
@@ -23,7 +22,6 @@
 
 typedef struct
 {
-	char user[USER_LENGTH];
 	char msg[DATA_SIZE];
 }PACKET;
 
@@ -32,4 +30,6 @@ typedef struct
 void __HandleMessage(int,PACKET*);
 int __InitServer(void);
 
+
+void __SendWELCM(int);
 #endif

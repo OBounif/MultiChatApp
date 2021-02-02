@@ -7,18 +7,18 @@
 #include "Database.h"
 
 #define CLIENT
-#include "Client.h"
+#include "User.h"
 
 static unsigned __GetClientId(char const*,MYSQL*);
 static Client* __BuildClient(char*,char*,char*,char*);
 static bool __IsExist(char const*,MYSQL *);
 
 
-static char* SQL_INSERT="INSERT INTO USERS (userName,password,lastIp,role,isBanned) values('%s','%s','%s','%s',%d)";
-static char* SQL_DELETE="DELETE from USERS where id=%d"; 
-static char* SQL_UPDATE="UPDATE USERS SET %s='%s' where id=%d";
-static char* SQL_SELECT="SELECT * from USERS where userName='%s'"; 
-static char* SQL_SELECTID="SELECT ID from USERS where userName='%s'"; 
+static char* SQL_INSERT="INSERT INTO users (nickName,password,lastIp,role,isBanned) values('%s','%s','%s','%s',%d)";
+static char* SQL_DELETE="DELETE from users where id=%d"; 
+static char* SQL_UPDATE="UPDATE users SET %s='%s' where id=%d";
+static char* SQL_SELECT="SELECT * from users where nickName='%s'"; 
+static char* SQL_SELECTID="SELECT ID from users where nickName='%s'"; 
 
 
 Client* __AddClient(char* userName,char* password,char* lastIp,char*rank)
@@ -102,9 +102,9 @@ Client* __GetClient(char const* userName)
 	
 	if(row)
 	{	
-		client=__BuildClient(row[1],row[2],row[3],row[4]);	
+		client=__BuildClient(row[1],row[2],row[3],row[5]);
 		client->id=atoi(row[0]);
-		client->isBanned=atoi(row[5]);
+		client->isBanned=atoi((row[5])?row[5]:"1");
 	}
 	
 	mysql_free_result(result);	
@@ -175,6 +175,8 @@ bool __RemoveClient(unsigned id)
 
 void __FreeClient(Client** cl)
 {
+	if(!(*cl))
+		return;
 	free((*cl)->userName);
 	free((*cl)->password);
 	free((*cl)->lastIp);
@@ -202,8 +204,9 @@ static Client* __BuildClient(char* userName,char* password,char* lastIp,char* ra
 		
 	strcpy(new->userName,userName);	
 	strcpy(new->password,password);	
-	strcpy(new->lastIp,lastIp ? lastIp : "NULL");	
-	strcpy(new->rank,rank ? rank: "NULL");	
+	strcpy(new->lastIp,(lastIp) ? lastIp : "NULL");	
+	strcpy(new->rank,(rank) ? rank: "NULL");
+	
 	new->isBanned=false;
 
 	return new;
