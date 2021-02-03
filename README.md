@@ -6,10 +6,8 @@ Using Socket programming and synchronous I/O multiplexing and mysql api for Db a
 
 ### How it's work 
 ```bash
-	## You need to edit config file and run make
-	
+	## Just run make 
 	make
-	
 ```
 ### Server script usage 
 ```bash
