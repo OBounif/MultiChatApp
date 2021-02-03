@@ -16,7 +16,7 @@ CLIENT_C=CLIENT_c
 SERVER_C=SERVER_C
 
 OBJS_SERVER=Server/*.o
-OBJS_CLIENT=Client/*.o
+OBJS_CLIENT=
 
 ifeq ($(DEBUG),true)
 	CFLAGS= -g -Wall -v
@@ -25,7 +25,7 @@ else
 endif
 	
 
-all : $(SERVER) $(CLIENT)
+all : $(SERVER) 
 
 $(SERVER): $(SERVER_C) 
 

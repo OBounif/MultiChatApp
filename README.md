@@ -1,9 +1,16 @@
 # Multi-Chat Application (Mono thread Server)
 [![Open Source Love](https://img.shields.io/badge/Open%20Source-%E2%9D%A4-red.svg)](https://github.com/Fr3eX/MultiChatApp)
-[![Build Status](https://travis-ci.org/forksociety/PyBeacon.svg?branch=master)](https://github.com/Fr3eX/MultiChatApp)
 
-Using Socket programming and synchronous I/O multiplexing and mysql api for Db access.
 
+Using Socket programming and synchronous I/O multiplexing and mysql api for Db access.Tested on Ubuntu 20.04.1
+
+### How it's work 
+```bash
+	## You need to edit config file and run make
+	
+	make
+	
+```
 ### Server script usage 
 ```bash
 ./SERVER <config-file>
@@ -37,5 +44,4 @@ Using Socket programming and synchronous I/O multiplexing and mysql api for Db a
 1. The Server manipulate memory efficiently.
 2. This Server is not a production-grade server.
 3. They might be some bug that i didn't pay attention.
-4. Feel free to contribute and collaborate 
-
+4. Feel free to collaborate.
