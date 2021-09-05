@@ -38,9 +38,8 @@ Using Socket programming and synchronous I/O multiplexing and mysql api for Db a
 | Ban           |    username           | ban permanently a user              |
 
 
-## Note : 
+## Notes : 
 1. The Server manipulate memory efficiently.
 2. This Server is not a production-grade server.
 3. They might be some bugs that i didn't pay attention.
 4. Feel free to collaborate.
-5. I'm working on client side
