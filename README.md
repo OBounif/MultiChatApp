@@ -28,7 +28,7 @@ Using Socket programming and synchronous I/O multiplexing and mysql api for Db a
 ### Commands
 
 
-| Command       | Parameter             | Desription                          |
+| Command       | Parameter             | Description                          |
 | ------------- | --------------------- | ----------------------------------- |
 | login         |                       | login to the server                 |
 | mp            |  username data        | for private message                 |
